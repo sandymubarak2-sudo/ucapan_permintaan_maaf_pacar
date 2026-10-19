@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maafkan Aku 💌</title>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Canvas Confetti Library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+:root {
+  --bg1: #fff0f3;
+  --bg2: #ffccd5;
+  --card: rgba(255, 255, 255, 0.82);
+  --border: rgba(255, 255, 255, 0.9);
+  --text: #4a1f2b;
+  --muted: #8a4b5b;
+  --accent: #e11d48;
+  --accent2: #fb7185;
+  --shadow: 0 10px 30px rgba(225, 29, 72, 0.15);
+}
+
+[data-theme="dark"] {
+  --bg1: #1c0a10;
+  --bg2: #3a1220;
+  --card: rgba(42, 16, 25, 0.82);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #ffe4ea;
+  --muted: #f4a9ba;
+  --accent: #fb7185;
+  --accent2: #e11d48;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: linear-gradient(160deg, var(--bg1), var(--bg2));
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Floating Hearts Canvas Background */
+#hearts-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Top Right Controls */
+.top-controls {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 100;
+  display: flex;
+  gap: 8px;
+}
+
+.control-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.control-btn:hover { transform: scale(1.1); }
+
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+section {
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 28px 24px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s, transform 0.8s;
+}
+
+section.show {
+  opacity: 1;
+  transform: none;
+}
+
+h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(2rem, 8vw, 3rem);
+  color: var(--accent);
+  line-height: 1.15;
+  margin-bottom: 12px;
+  font-weight: 800;
+}
+
+h2 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.5rem;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+p {
+  line-height: 1.8;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.sub {
+  color: var(--muted);
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+.big {
+  font-size: 3.2rem;
+  margin-bottom: 8px;
+  display: inline-block;
+  animation: beat 1.4s infinite;
+}
+
+@keyframes beat { 50% { transform: scale(1.18); } }
+
+/* Typing Box */
+#typed {
+  min-height: 5.4em;
+  text-align: left;
+  line-height: 1.7;
+}
+
+/* Cards List */
+.cards {
+  display: grid;
+  gap: 12px;
+  text-align: left;
+}
+
+.cards div {
+  background: rgba(255, 255, 255, 0.2);
+  border-left: 4px solid var(--accent);
+  border-radius: 12px;
+  padding: 12px 16px;
+  line-height: 1.6;
+}
+
+/* Polaroid Gallery */
+.gallery {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.polaroid {
+  background: #fff;
+  padding: 8px 8px 16px 8px;
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  transform: rotate(-3deg);
+  max-width: 180px;
+  transition: transform 0.3s;
+}
+
+.polaroid:nth-child(even) { transform: rotate(3deg); }
+.polaroid:hover { transform: scale(1.05) rotate(0deg); z-index: 2; }
+
+.polaroid img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.polaroid span {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  color: #333;
+  margin-top: 6px;
+  font-size: 0.8rem;
+}
+
+/* Dynamic Buttons Area */
+.btns {
+  position: relative;
+  min-height: 140px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+  overflow: hidden;
+  padding: 10px;
+}
+
+button {
+  font-family: inherit;
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 28px;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 600;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#yes {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(225, 29, 72, 0.35);
+  z-index: 2;
+}
+
+#yes:hover { transform: scale(1.08); }
+
+#no {
+  background: var(--bg2);
+  color: var(--muted);
+  position: relative;
+  z-index: 1;
+  transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+#end { display: none; }
+
+footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: .9rem;
+  margin-top: 8px;
+}
+
+/* Modal Kustomisasi */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-content {
+  background: var(--card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: var(--shadow);
+}
+
+.modal-content h3 { color: var(--accent); margin-bottom: 12px; }
+.modal-content label { display: block; text-align: left; font-size: 0.85rem; margin: 10px 0 4px; color: var(--muted); }
+.modal-content input, .modal-content textarea {
+  width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.5); color: inherit; font-family: inherit;
+}
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+.modal-actions button { padding: 8px 18px; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<canvas id="hearts-canvas"></canvas>
+
+<!-- Top Right Controls -->
+<div class="top-controls">
+  <button class="control-btn" id="music-btn" title="Musik">🎵</button>
+  <button class="control-btn" id="theme-btn" title="Tema">🌙</button>
+  <button class="control-btn" id="edit-btn" title="Edit Teks">✏️</button>
+</div>
+
+<main>
+  <!-- Hero Section -->
+  <section class="show">
+    <div class="big">💔➡️💖</div>
+    <h1>Maafkan Aku, <span id="nama">Sayang</span></h1>
+    <p class="sub">Untukmu, orang yang paling aku sayangi.</p>
+  </section>
+
+  <!-- Letter Section -->
+  <section>
+    <h2>Sebuah Pesan</h2>
+    <p id="typed"></p>
+  </section>
+
+  <!-- Photo Gallery -->
+  <section>
+    <h2>Momen Indah Kita</h2>
+    <div class="gallery">
+      <div class="polaroid">
+        <img id="img1" src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80" alt="Momen 1">
+        <span>Kenangan Manis ✨</span>
+      </div>
+      <div class="polaroid">
+        <img id="img2" src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=400&q=80" alt="Momen 2">
+        <span>Saat Bersamamu 💖</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Realizations -->
+  <section>
+    <h2>Yang Aku Sadari</h2>
+    <div class="cards">
+      <div>🌧️ Aku sudah membuatmu sedih, dan itu adalah kesalahanku sepenuhnya.</div>
+      <div>🤐 Aku seharusnya lebih mendengarkan, bukan sibuk membela diri.</div>
+      <div>🌱 Aku mau belajar dan berubah, bukan sekadar berjanji.</div>
+      <div>🤍 Kamu jauh lebih berharga daripada egoku.</div>
+    </div>
+  </section>
+
+  <!-- Janji -->
+  <section>
+    <h2>Janjiku</h2>
+    <p>Aku berjanji akan lebih jujur, lebih sabar, dan lebih hadir. Aku tidak minta kamu melupakan semuanya, aku hanya minta kesempatan untuk membuktikannya.</p>
+  </section>
+
+  <!-- Asking Section -->
+  <section id="ask">
+    <h2>Maukah kamu memaafkan aku? 🥺</h2>
+    <div class="btns">
+      <button id="yes">Iya, aku maafkan 💖</button>
+      <button id="no">Belum dulu</button>
+    </div>
+    <p class="sub" id="hint" style="min-height:24px; margin-top:8px;"></p>
+  </section>
+
+  <!-- End Section -->
+  <section id="end">
+    <div class="big">🥰</div>
+    <h1>Terima kasih, Sayang!</h1>
+    <p>Kamu adalah alasan aku mau jadi lebih baik setiap hari. Aku sayang kamu, hari ini dan seterusnya. 💕</p>
+  </section>
+
+  <footer>Dibuat dengan penuh penyesalan dan cinta ✨</footer>
+</main>
+
+<!-- Modal Edit -->
+<div class="modal" id="edit-modal">
+  <div class="modal-content">
+    <h3>Edit Pesan & Foto</h3>
+    <label>Nama Pasangan:</label>
+    <input type="text" id="edit-nama">
+    <label>Isi Pesan Surat:</label>
+    <textarea id="edit-pesan" rows="4"></textarea>
+    <label>URL Foto 1:</label>
+    <input type="text" id="edit-img1">
+    <label>URL Foto 2:</label>
+    <input type="text" id="edit-img2">
+    <div class="modal-actions">
+      <button onclick="closeModal()">Batal</button>
+      <button id="yes" style="padding: 8px 18px;" onclick="saveConfig()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- DATA VARIABLES ---
+var NAMA = "Sayang";
+var PESAN = "Aku tahu kata maaf saja tidak cukup untuk menghapus rasa kecewamu. Tapi aku ingin kamu tahu, aku benar-benar menyesal. Aku sadar sikapku melukai hatimu, dan tidak ada yang lebih aku inginkan selain memperbaikinya. Kamu berarti segalanya bagiku.";
+var IMG1 = "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80";
+var IMG2 = "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=400&q=80";
+
+function updateDataUI() {
+  document.getElementById("nama").textContent = NAMA;
+  document.getElementById("img1").src = IMG1;
+  document.getElementById("img2").src = IMG2;
+}
+updateDataUI();
+
+// --- LOGIKA TOMBOL "BELUM DULU" MENGHINDAR ---
+var no = document.getElementById("no");
+var yes = document.getElementById("yes");
+var hint = document.getElementById("hint");
+var msgs = ["Yakin? 🥺", "Coba pikir lagi ya…", "Aku janji berubah 🙏", "Satu kesempatan saja 💔"];
+var n = 0;
+
+function dodge() {
+  var parent = no.parentElement;
+  var box = parent.getBoundingClientRect();
+  
+  // Pastikan tombol berganti ke posisi absolute saat disentuh/didekati
+  no.style.position = "absolute";
+  
+  // Hitung batas ruang agar tidak terpotong (overflow)
+  var maxX = Math.max(10, box.width - no.offsetWidth - 10);
+  var maxY = Math.max(10, box.height - no.offsetHeight - 10);
+  
+  var randomX = Math.random() * maxX;
+  var randomY = Math.random() * maxY;
+  
+  no.style.left = randomX + "px";
+  no.style.top = randomY + "px";
+  
+  hint.textContent = msgs[n++ % msgs.length];
+  yes.style.transform = "scale(" + Math.min(1.5, 1 + n * .08) + ")";
+}
+
+no.addEventListener("mouseenter", dodge);
+no.addEventListener("click", dodge);
+no.addEventListener("touchstart", function (e) { 
+  e.preventDefault(); 
+  dodge(); 
+});
+
+// --- EVENT DIMAAFKAN ---
+yes.addEventListener("click", function () {
+  document.getElementById("ask").style.display = "none";
+  var end = document.getElementById("end");
+  end.style.display = "block";
+  
+  setTimeout(function () { 
+    end.classList.add("show"); 
+    end.scrollIntoView({ behavior: "smooth", block: "center" }); 
+  }, 50);
+
+  // Confetti Selebrasi
+  if (typeof confetti === "function") {
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+  }
+});
+
+// --- INTERSECTION OBSERVER & TYPEWRITER ---
+var typed = false;
+var io = new IntersectionObserver(function (es) {
+  es.forEach(function (e) {
+    if (!e.isIntersecting) return;
+    e.target.classList.add("show");
+    if (!typed && e.target.querySelector("#typed")) {
+      typed = true;
+      var el = document.getElementById("typed"), k = 0;
+      (function t() { 
+        if (k <= PESAN.length) { 
+          el.textContent = PESAN.slice(0, k++); 
+          setTimeout(t, 28); 
+        } 
+      })();
+    }
+  });
+}, { threshold: .25 });
+
+document.querySelectorAll("section").forEach(function (s) { io.observe(s); });
+
+// --- FLOATING HEARTS BACKGROUND ---
+var canvas = document.getElementById("hearts-canvas");
+var ctx = canvas.getContext("2d");
+var hearts = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+function Heart() {
+  this.x = Math.random() * canvas.width;
+  this.y = canvas.height + Math.random() * 50;
+  this.size = Math.random() * 16 + 12;
+  this.speed = Math.random() * 1.2 + 0.6;
+  this.opacity = Math.random() * 0.5 + 0.4;
+  this.emojis = ["💖","💕","💗","🌸","💞"];
+  this.char = this.emojis[Math.floor(Math.random() * this.emojis.length)];
+}
+
+Heart.prototype.update = function() {
+  this.y -= this.speed;
+  if (this.y < -30) {
+    this.y = canvas.height + 20;
+    this.x = Math.random() * canvas.width;
+  }
+};
+
+Heart.prototype.draw = function() {
+  ctx.save();
+  ctx.globalAlpha = this.opacity;
+  ctx.font = this.size + "px serif";
+  ctx.fillText(this.char, this.x, this.y);
+  ctx.restore();
+};
+
+for (var i = 0; i < 20; i++) { hearts.push(new Heart()); }
+
+function animateHearts() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  hearts.forEach(function(h) { h.update(); h.draw(); });
+  requestAnimationFrame(animateHearts);
+}
+animateHearts();
+
+// --- AMBIENT MUSIC (WEB AUDIO API) ---
+var audioCtx = null, isPlaying = false, musicInterval = null;
+document.getElementById("music-btn").addEventListener("click", function() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (isPlaying) {
+    clearInterval(musicInterval);
+    isPlaying = false;
+    this.textContent = "🎵";
+  } else {
+    isPlaying = true;
+    this.textContent = "🔊";
+    var notes = [261.63, 329.63, 392.00, 523.25, 659.25];
+    musicInterval = setInterval(function() {
+      if (!isPlaying) return;
+      var osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(notes[Math.floor(Math.random() * notes.length)], audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime + 0.4);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.4);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 2.5);
+    }, 1200);
+  }
+});
+
+// --- THEME TOGGLE ---
+var themeBtn = document.getElementById("theme-btn");
+themeBtn.addEventListener("click", function() {
+  var html = document.documentElement;
+  if (html.getAttribute("data-theme") === "dark") {
+    html.setAttribute("data-theme", "light");
+    themeBtn.textContent = "🌙";
+  } else {
+    html.setAttribute("data-theme", "dark");
+    themeBtn.textContent = "☀️";
+  }
+});
+
+// --- MODAL CONFIG EDITOR ---
+var modal = document.getElementById("edit-modal");
+document.getElementById("edit-btn").addEventListener("click", function() {
+  document.getElementById("edit-nama").value = NAMA;
+  document.getElementById("edit-pesan").value = PESAN;
+  document.getElementById("edit-img1").value = IMG1;
+  document.getElementById("edit-img2").value = IMG2;
+  modal.style.display = "flex";
+});
+
+function closeModal() { modal.style.display = "none"; }
+
+function saveConfig() {
+  NAMA = document.getElementById("edit-nama").value || NAMA;
+  PESAN = document.getElementById("edit-pesan").value || PESAN;
+  IMG1 = document.getElementById("edit-img1").value || IMG1;
+  IMG2 = document.getElementById("edit-img2").value || IMG2;
+  
+  updateDataUI();
+  
+  // Reset ngetik pesan
+  typed = false;
+  document.getElementById("typed").textContent = "";
+  
+  closeModal();
+}
+</script>
+</body>
+</html>
